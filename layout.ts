@@ -30,8 +30,7 @@ export function NewComponent(props: {
 }) {
   const base = `
         <div>
-            <h2>this is new layout h2</h2>
-            <p>children goes here</p>
+         
             {{ .children }}
   
         </div>

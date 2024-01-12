@@ -16,11 +16,58 @@ app.get("/get/todo", function (req, res) {
     res.set("user-data", "text/html");
     res.send(
       NewComponent({
-        children: "<h1>hamro tempasdadslating</h1>",
+        children: `
+        <form
+        hx-indicator="#loading"
+        hx-post="/add-todos"
+        hx-trigger="submit"
+        hx-vals="title desc"
+        class="bg-white shadow-2xl rounded px-8 pt-6 pb-8 w-[600px]"
+      >
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+            Title
+          </label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="title"
+            name="title"
+            type="text"
+            placeholder="Title"
+          />
+        </div>
+  
+        <div class="mb-6">
+          <label
+            class="block text-gray-700 text-sm font-bold mb-2"
+            for="description"
+          >
+            Description
+          </label>
+          <textarea
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="desc"
+            rows="3"
+            name="description"
+            placeholder="Description"
+          ></textarea>
+        </div>
+  
+        <div class="flex items-center justify-between">
+          <button
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="submit"
+          >
+            Submit
+          </button>
+        </div>
+      </form>
+      `,
       })
     );
-  }, 1000);
+  }, 500);
 });
+
 //GET REQ FOR TODOS
 app.get("/todos-data", async (req, res) => {
   try {
@@ -115,6 +162,12 @@ app.post("/search/todos-data", async (req, res) => {
 app.post("/add-todos", async (req, res) => {
   try {
     const { title, description } = req.body;
+    console.log({ title, description });
+    if (!title || !description) {
+      return res
+        .status(400)
+        .send({ error: "Both title and description are required." });
+    }
     const todos = await prisma.todo.create({
       data: {
         title,

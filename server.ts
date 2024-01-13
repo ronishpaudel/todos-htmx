@@ -1,28 +1,84 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
-import { NewComponent } from "./layout";
+import { Layout, NewComponent } from "./layout";
 
 const app = express();
 const prisma = new PrismaClient();
+
 // Set static folder
-app.use(express.static("public"));
+
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.urlencoded({ extended: true }));
 // Parse JSON bodies (as sent by API clients)
 app.use(express.json());
 
+app.get("/", function (req, res) {
+  const html = Layout({
+    children: NewComponent({
+      children: ` 
+      <span class="htmx-indicator" id="loading">
+        <img src="/loader.gif" alt="Loading..." class="m-auto h-10" />
+      </span>
+      <div
+        class="flex-col flex bg-gray-900 w-[650px] rounded-lg text-white"
+        hx-get="/todos-data"
+        hx-target="#todo-data"
+        hx-trigger="load"
+      >
+        <div class="flex text-white pt-5 pb-3 gap-5 items-center pl-[1.5rem]">
+          <input
+            class="border border-gray-600 bg-gray-800 p-2 rounded-lg w-[484px] py-2"
+            placeholder="Start Searching Your Todos...."
+            name="search"
+            type="search"
+            hx-post="/search/todos-data"
+            hx-trigger="input changed delay:500ms, search"
+            hx-target="#search-results"
+            hx-indicator="#loading"
+          />
+          <div
+            hx-get="/get/todo"
+            hx-swap="outerHTML"
+            hx-target="#todos-container"
+            hx-push-url="true"
+            hx-indicator="#loading"
+            class="bg-green-600 py-2 px-1 rounded-lg cursor-pointer text-[14px] uppercase font-medium"
+          >
+            Add new todo
+          </div>
+        </div>
+        <div class="text-white flex px-[1.7rem] w-full underline">
+          <div class="w-[45%] py-1 text-xs font-medium uppercase tracking-wider">
+            S.N
+          </div>
+          <div
+            class="px-6 py-1 text-center text-xs font-medium uppercase tracking-wider"
+          >
+            Todo-List
+          </div>
+        </div>
+        <div id="todo-data" class="mb-2"></div>
+        <div id="search-results" class="mb-2 bg-gray-800"></div>
+      </div>
+    `,
+    }),
+  });
+  res.send(html);
+});
+
 app.get("/get/todo", function (req, res) {
-  setInterval(() => {
-    res.set("user-data", "text/html");
-    res.send(
-      NewComponent({
-        children: `
+  res.set("user-data", "text/html");
+  res.send(
+    NewComponent({
+      children: `
         <form
         hx-indicator="#loading"
         hx-post="/add-todos"
         hx-trigger="submit"
         hx-vals="title desc"
         class="bg-white shadow-2xl rounded px-8 pt-6 pb-8 w-[600px]"
+        hx-swap="outerHTML"
+        hx-target="#todos-container"
       >
         <div class="mb-4">
           <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
@@ -62,10 +118,10 @@ app.get("/get/todo", function (req, res) {
           </button>
         </div>
       </form>
+
       `,
-      })
-    );
-  }, 500);
+    })
+  );
 });
 
 //GET REQ FOR TODOS
@@ -174,7 +230,8 @@ app.post("/add-todos", async (req, res) => {
         description,
       },
     });
-    return res.status(200).send(todos);
+
+    return res.status(201).redirect("/");
   } catch (e) {
     console.log(e);
     return res.status(304).send("Forbidden to create todos");

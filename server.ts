@@ -6,7 +6,7 @@ const app = express();
 const prisma = new PrismaClient();
 
 // Set static folder
-
+app.use(express.static("public"));
 // Parse URL-encoded bodies (as sent by HTML forms)
 app.use(express.urlencoded({ extended: true }));
 // Parse JSON bodies (as sent by API clients)
@@ -16,9 +16,7 @@ app.get("/", function (req, res) {
   const html = Layout({
     children: NewComponent({
       children: ` 
-      <span class="htmx-indicator" id="loading">
-        <img src="/loader.gif" alt="Loading..." class="m-auto h-10" />
-      </span>
+  
       <div
         class="flex-col flex bg-gray-900 w-[650px] rounded-lg text-white"
         hx-get="/todos-data"

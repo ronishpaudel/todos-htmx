@@ -13,7 +13,7 @@ export function Layout(props: { children: string }) {
         <script src="https://cdn.tailwindcss.com"></script>
         <title>HTMX TESTING</title>
       </head>
-      <body class="text-center">
+      <body >
       
         {{ .children }}
       </body>
@@ -29,8 +29,10 @@ export function NewComponent(props: {
   height?: string;
 }) {
   const base = `
-        <div>
-         
+        <div class="flex flex-col justify-center items-center h-[100vh]" id="todos-container" >
+        <span class="htmx-indicator" id="loading">
+        <img src="../img/loader.gif" alt="Loading..." class="m-auto h-10" />
+      </span>
             {{ .children }}
   
         </div>

@@ -31,7 +31,7 @@ export function NewComponent(props: {
   const base = `
         <div class="flex flex-col justify-center items-center h-[100vh]" id="todos-container" >
         <span class="htmx-indicator" id="loading">
-        <img src="../img/loader.gif" alt="Loading..." class="m-auto h-10" />
+        <img src="/loader.gif" alt="Loading..." class="m-auto h-10" />
       </span>
             {{ .children }}
   

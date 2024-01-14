@@ -50,7 +50,7 @@ app.get("/", function (req, res) {
             S.N
           </div>
           <div
-            class="px-6 py-1 text-center text-xs font-medium uppercase tracking-wider"
+            class="py-1 text-center text-xs font-medium uppercase tracking-wider"
           >
             Todo-List
           </div>
@@ -138,17 +138,19 @@ app.get("/todos-data", async (req, res) => {
 
     const getTodos = desiredTodos
       .map((res) => {
-        return ` <div
-        class="flex text-white px-[1.7rem] gap-5 items-center"
-      >
+        return ` 
+        <div
+        class="flex text-white px-[1.7rem] gap-5 items-center">
         <label class="flex flex-col gap-[2px] w-[3%]">
-        <input type="checkbox" name="checkbox" />
+        <input type="checkbox" name="checkbox"/>
         </label>
         <div
-          class="flex flex-col text-center w-full cursor-pointer text-[16px] font-semibold"
-        >
+          class="flex flex-col text-center w-full cursor-pointer text-[16px] font-semibold">
           <div>${res.title}</div>
           </div>
+       
+          <img hx-post="/remove-todos/${res.id}" src="/delete.png" alt="delete-img" class="h-[1.1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
+  
           </div>
         `;
       })
@@ -222,7 +224,7 @@ app.post("/add-todos", async (req, res) => {
         .status(400)
         .send({ error: "Both title and description are required." });
     }
-    const todos = await prisma.todo.create({
+    await prisma.todo.create({
       data: {
         title,
         description,
@@ -240,12 +242,14 @@ app.post("/add-todos", async (req, res) => {
 app.delete("/remove-todos/:id", async (req, res) => {
   try {
     const id = req.params.id;
+    console.log(id);
     const deletedTodo = await prisma.todo.delete({
       where: {
         id: Number(id),
       },
     });
-    return res.json(deletedTodo);
+    console.log(deletedTodo);
+    return res.send(deletedTodo);
   } catch (e) {
     return res.status(404).send("Nothing here tto delete");
   }

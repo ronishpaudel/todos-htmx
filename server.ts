@@ -149,7 +149,7 @@ app.get("/todos-data", async (req, res) => {
           <div>${res.title}</div>
           </div>
        
-          <img hx-post="/remove-todos/${res.id}" src="/delete.png" alt="delete-img" class="h-[1.1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
+          <img hx-delete="/remove-todos/${res.id}" hx-target="closest div" src="/delete.png" alt="delete-img" class="h-[1.1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
   
           </div>
         `;
@@ -248,7 +248,7 @@ app.delete("/remove-todos/:id", async (req, res) => {
         id: Number(id),
       },
     });
-    return res.send(deletedTodo);
+    return res.status(200).send(``);
   } catch (e) {
     return res.status(404).send("Nothing here tto delete");
   }

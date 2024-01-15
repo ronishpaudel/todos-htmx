@@ -248,7 +248,6 @@ app.delete("/remove-todos/:id", async (req, res) => {
         id: Number(id),
       },
     });
-    console.log(deletedTodo);
     return res.send(deletedTodo);
   } catch (e) {
     return res.status(404).send("Nothing here tto delete");

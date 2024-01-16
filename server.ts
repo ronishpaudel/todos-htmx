@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { Layout, NewComponent } from "./layout";
+import { editHtml, formHtml } from "./form";
+import { mainHtml } from "./body";
 
 const app = express();
 const prisma = new PrismaClient();
@@ -15,50 +17,7 @@ app.use(express.json());
 app.get("/", function (req, res) {
   const html = Layout({
     children: NewComponent({
-      children: ` 
-  
-      <div
-        class="flex-col flex bg-gray-900 w-[650px] rounded-lg text-white"
-        hx-get="/todos-data"
-        hx-target="#todo-data"
-        hx-trigger="load"
-      >
-        <div class="flex text-white pt-5 pb-3 gap-5 items-center pl-[1.5rem]">
-          <input
-            class="border border-gray-600 bg-gray-800 p-2 rounded-lg w-[484px] py-2"
-            placeholder="Start Searching Your Todos...."
-            name="search"
-            type="search"
-            hx-post="/search/todos-data"
-            hx-trigger="input changed delay:500ms, search"
-            hx-target="#search-results"
-            hx-indicator="#loading"
-          />
-          <div
-            hx-get="/get/todo"
-            hx-swap="outerHTML"
-            hx-target="#todos-container"
-            hx-push-url="true"
-            hx-indicator="#loading"
-            class="bg-green-600 py-2 px-1 rounded-lg cursor-pointer text-[14px] uppercase font-medium"
-          >
-            Add new todo
-          </div>
-        </div>
-        <div class="text-white flex px-[1.7rem] w-full underline">
-          <div class="w-[45%] py-1 text-xs font-medium uppercase tracking-wider">
-            S.N
-          </div>
-          <div
-            class="py-1 text-center text-xs font-medium uppercase tracking-wider"
-          >
-            Todo-List
-          </div>
-        </div>
-        <div id="todo-data" class="mb-2"></div>
-        <div id="search-results" class="mb-2 bg-gray-800"></div>
-      </div>
-    `,
+      children: mainHtml(),
     }),
   });
   res.send(html);
@@ -68,56 +27,7 @@ app.get("/get/todo", function (req, res) {
   res.set("user-data", "text/html");
   res.send(
     NewComponent({
-      children: `
-        <form
-        hx-indicator="#loading"
-        hx-post="/add-todos"
-        hx-trigger="submit"
-        hx-vals="title desc"
-        class="bg-white shadow-2xl rounded px-8 pt-6 pb-8 w-[600px]"
-        hx-swap="outerHTML"
-        hx-target="#todos-container"
-      >
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
-            Title
-          </label>
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="title"
-            name="title"
-            type="text"
-            placeholder="Title"
-          />
-        </div>
-  
-        <div class="mb-6">
-          <label
-            class="block text-gray-700 text-sm font-bold mb-2"
-            for="description"
-          >
-            Description
-          </label>
-          <textarea
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="desc"
-            rows="3"
-            name="description"
-            placeholder="Description"
-          ></textarea>
-        </div>
-  
-        <div class="flex items-center justify-between">
-          <button
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-          >
-            Submit
-          </button>
-        </div>
-      </form>
-
-      `,
+      children: formHtml(),
     })
   );
 });
@@ -148,8 +58,12 @@ app.get("/todos-data", async (req, res) => {
           class="flex flex-col text-center w-full cursor-pointer text-[16px] font-semibold">
           <div>${res.title}</div>
           </div>
-       
-          <img hx-delete="/remove-todos/${res.id}" hx-target="closest div" src="/delete.png" alt="delete-img" class="h-[1.1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
+          <img hx-get="/get-todo/${res.id}"        
+          hx-swap="outerHTML"
+          hx-target="#todos-container" 
+          src="/edit.png" alt="delete-img" 
+          class="h-[1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
+          <img hx-delete="/remove-todos/${res.id}" hx-target="closest div" src="/delete.png" alt="delete-img" class="h-[1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
   
           </div>
         `;
@@ -159,6 +73,45 @@ app.get("/todos-data", async (req, res) => {
   } catch (e) {
     console.log(e);
     return res.status(404).send("todos Not found");
+  }
+});
+
+//GET TODO THROUGH ID
+app.get("/get-todo/:id", async (req, res) => {
+  try {
+    const searchId = req.params.id;
+
+    if (searchId === undefined || searchId === null) {
+      return res.status(400).send("Invalid todo ID");
+    }
+
+    const preserveId = await prisma.todo.findUnique({
+      where: {
+        id: Number(searchId),
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+      },
+    });
+
+    if (!preserveId) {
+      return res.status(404).send("Todo not found");
+    }
+
+    return res.status(200).send(
+      NewComponent({
+        children: editHtml({
+          id: preserveId.id,
+          title: preserveId.title,
+          description: preserveId.description,
+        }),
+      })
+    );
+  } catch (e) {
+    console.error(e);
+    return res.status(500).send("Internal Server Error");
   }
 });
 
@@ -214,7 +167,7 @@ app.post("/search/todos-data", async (req, res) => {
   }
 });
 
-//POST REQ FOR TODOS
+//EDIT POST REQ FOR TODOS
 app.post("/add-todos", async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -238,12 +191,36 @@ app.post("/add-todos", async (req, res) => {
   }
 });
 
+//POST REQ TODOS
+app.post("/edit-todos", async (req, res) => {
+  try {
+    const { id, title, description } = req.body;
+    if (!id || !title || !description) {
+      return res
+        .status(400)
+        .send({ error: "Both title and description are required." });
+    }
+    await prisma.todo.update({
+      where: {
+        id: Number(id),
+      },
+      data: {
+        title: title,
+        description: description,
+      },
+    });
+
+    return res.status(200).redirect("/");
+  } catch (e) {
+    return res.status(401).send("Failed to update todo");
+  }
+});
+
 //DELETE REQ FOR TODOS
 app.delete("/remove-todos/:id", async (req, res) => {
   try {
     const id = req.params.id;
-    console.log(id);
-    const deletedTodo = await prisma.todo.delete({
+    await prisma.todo.delete({
       where: {
         id: Number(id),
       },

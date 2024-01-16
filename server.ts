@@ -52,7 +52,7 @@ app.get("/todos-data", async (req, res) => {
         <div
         class="flex text-white px-[1.7rem] gap-5 items-center">
         <label class="flex flex-col gap-[2px] w-[3%]">
-        <input type="checkbox" name="checkbox"/>
+        <input type="checkbox" name="checkbox"  />
         </label>
         <div
           class="flex flex-col text-center w-full cursor-pointer text-[16px] font-semibold">

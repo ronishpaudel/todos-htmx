@@ -123,29 +123,30 @@ app.post("/search/todos-data", async (req, res) => {
     if (!searchTerm) {
       return res.status(200).send(`<div></div>`);
     }
-    const searchResults = await prisma.todo.findMany({
-      where: {
-        title: {
-          contains: searchTerm,
+    setTimeout(async () => {
+      const searchResults = await prisma.todo.findMany({
+        where: {
+          title: {
+            contains: searchTerm,
+          },
         },
-      },
-      select: {
-        id: true,
-        title: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+        select: {
+          id: true,
+          title: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
 
-    const searchResultsFilter = searchResults.filter((res) => {
-      const title = res.title.toLowerCase();
-      return title.includes(searchTerm);
-    });
+      const searchResultsFilter = searchResults.filter((res) => {
+        const title = res.title.toLowerCase();
+        return title.includes(searchTerm);
+      });
 
-    const searchResultHtml = searchResultsFilter
-      .map((res) => {
-        return ` 
+      const searchResultHtml = searchResultsFilter
+        .map((res) => {
+          return ` 
           <div
           class="flex text-white px-[1.7rem] gap-5 items-center">
           <label class="flex flex-col gap-[2px] w-[3%]">
@@ -163,17 +164,18 @@ app.post("/search/todos-data", async (req, res) => {
             <img hx-delete="/remove-todos/${res.id}" hx-target="closest div" src="/delete.png" alt="delete-img" class="h-[1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
     
             </div>
-        `;
-      })
-      .join("");
-    return res.status(200).send(searchResultHtml);
+          `;
+        })
+        .join("");
+      return res.status(200).send(searchResultHtml);
+    }, 500);
   } catch (e) {
     console.log(e);
     return res.status(404).send("todos Not found");
   }
 });
 
-//EDIT POST REQ FOR TODOS
+// POST REQ FOR TODOS
 app.post("/add-todos", async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -190,14 +192,14 @@ app.post("/add-todos", async (req, res) => {
       },
     });
 
-    return res.status(201).redirect("/");
+    return res.status(302).redirect("/");
   } catch (e) {
     console.log(e);
     return res.status(304).send("Forbidden to create todos");
   }
 });
 
-//POST REQ TODOS
+// EDIT POST REQ TODOS
 app.post("/edit-todos", async (req, res) => {
   try {
     const { id, title, description } = req.body;

@@ -121,7 +121,7 @@ app.post("/search/todos-data", async (req, res) => {
     const searchTerm = req.body.search.toLowerCase();
 
     if (!searchTerm) {
-      return res.status(404).send(`<div>No Such Todos exist.</div>`);
+      return res.status(200).send(`<div></div>`);
     }
     const searchResults = await prisma.todo.findMany({
       where: {
@@ -130,6 +130,7 @@ app.post("/search/todos-data", async (req, res) => {
         },
       },
       select: {
+        id: true,
         title: true,
       },
       orderBy: {
@@ -141,26 +142,31 @@ app.post("/search/todos-data", async (req, res) => {
       const title = res.title.toLowerCase();
       return title.includes(searchTerm);
     });
-    setInterval(() => {
-      const searchResultHtml = searchResultsFilter
-        .map((res) => {
-          return ` <div
-        class="flex text-white px-[1.7rem] gap-5 items-center"
-      >
-        <label class="flex flex-col gap-[2px] w-[3%]">
-        <input type="checkbox" />
-        </label>
-        <div
-          class="flex flex-col text-center w-full cursor-pointer text-[16px] font-semibold"
-        >
-          <div>${res.title}</div>
-          </div>
-          </div>
+
+    const searchResultHtml = searchResultsFilter
+      .map((res) => {
+        return ` 
+          <div
+          class="flex text-white px-[1.7rem] gap-5 items-center">
+          <label class="flex flex-col gap-[2px] w-[3%]">
+          <input type="checkbox" name="checkbox"  />
+          </label>
+          <div
+            class="flex flex-col text-center w-full cursor-pointer text-[16px] font-semibold">
+            <div>${res.title}</div>
+            </div>
+            <img hx-get="/get-todo/${res.id}"        
+            hx-swap="outerHTML"
+            hx-target="#todos-container" 
+            src="/edit.png" alt="delete-img" 
+            class="h-[1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
+            <img hx-delete="/remove-todos/${res.id}" hx-target="closest div" src="/delete.png" alt="delete-img" class="h-[1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
+    
+            </div>
         `;
-        })
-        .join("");
-      return res.status(200).send(searchResultHtml);
-    }, 1000);
+      })
+      .join("");
+    return res.status(200).send(searchResultHtml);
   } catch (e) {
     console.log(e);
     return res.status(404).send("todos Not found");

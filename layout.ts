@@ -9,7 +9,7 @@ export function Layout(props: { children: string }) {
           integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
           crossorigin="anonymous"
         ></script>
-    
+        <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
         <script src="https://cdn.tailwindcss.com"></script>
         <title>HTMX TESTING</title>
       </head>

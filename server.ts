@@ -34,6 +34,8 @@ app.get("/get/todo", function (req, res) {
 
 //GET REQ FOR TODOS
 app.get("/todos-data", async (req, res) => {
+  const pageSize = 8;
+  const page = Number(req.query?.page) || 1;
   try {
     const desiredTodos = await prisma.todo.findMany({
       select: {
@@ -44,29 +46,44 @@ app.get("/todos-data", async (req, res) => {
       orderBy: {
         createdAt: "desc",
       },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     });
 
+    const todoHtml = (res: { title: string; id: number }, isLast: boolean) => ` 
+    <div
+    class="flex text-white px-[1.7rem] gap-5 items-center" 
+    ${
+      isLast
+        ? `hx-get="/todos-data?page=${
+            page + 1
+          }" hx-trigger="intersect once" hx-swap="beforeend"`
+        : ""
+    }
+    >
+    <label class="flex flex-col gap-[2px] w-[3%]">
+    <input type="checkbox" name="checkbox" />
+    </label>
+    <div
+      class="flex flex-col text-center w-full cursor-pointer text-[16px] font-semibold">
+      <div>${res.title}</div>
+    </div>
+      <img hx-get="/get-todo/${res.id}"        
+      hx-swap="outerHTML"
+      hx-target="#todos-container" 
+      src="/edit.png" alt="delete-img" 
+      class="h-[1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
+      <img hx-delete="/remove-todos/${
+        res.id
+      }" hx-target="closest div" src="/delete.png" alt="delete-img" class="h-[1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
+
+      </div>
+
+    `;
+
     const getTodos = desiredTodos
-      .map((res) => {
-        return ` 
-        <div
-        class="flex text-white px-[1.7rem] gap-5 items-center">
-        <label class="flex flex-col gap-[2px] w-[3%]">
-        <input type="checkbox" name="checkbox"  />
-        </label>
-        <div
-          class="flex flex-col text-center w-full cursor-pointer text-[16px] font-semibold">
-          <div>${res.title}</div>
-          </div>
-          <img hx-get="/get-todo/${res.id}"        
-          hx-swap="outerHTML"
-          hx-target="#todos-container" 
-          src="/edit.png" alt="delete-img" 
-          class="h-[1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
-          <img hx-delete="/remove-todos/${res.id}" hx-target="closest div" src="/delete.png" alt="delete-img" class="h-[1rem] cursor-pointer" style="filter: brightness(0) invert(1)"/>
-  
-          </div>
-        `;
+      .map((res, i) => {
+        return todoHtml(res, desiredTodos?.length - 1 === i);
       })
       .join("");
     return res.status(200).send(getTodos);

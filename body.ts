@@ -39,7 +39,7 @@ export const mainHtml = () => {
         </div>
       </div>
 
-      <div id="todo-data" class="mb-2 overflow-y-auto max-h-[150px]" style="color-scheme:dark;" >
+      <div id="todo-data" class="mb-2 overflow-y-auto max-h-[150px]" style="color-scheme:dark;">
       
       </div>
       <div id="search-results" class="mb-2 bg-gray-800"></div>

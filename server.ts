@@ -6,6 +6,7 @@ import { mainHtml } from "./body";
 
 const app = express();
 const prisma = new PrismaClient();
+const fs = require("fs");
 
 // Set static folder
 app.use(express.static("public"));
@@ -195,8 +196,76 @@ app.post("/search/todos-data", async (req, res) => {
 // POST REQ FOR TODOS
 app.post("/add-todos", async (req, res) => {
   try {
-    const { title, description } = req.body;
-    console.log({ title, description });
+    const { title, description, file } = req.body;
+
+    // console.log({ n: { ...req.body.file } });
+
+    console.log({ title, description, file });
+
+    fs.readFile("example.csv", "utf-8", (err: Error, data: any) => {
+      if (err) {
+        console.log(err);
+      } else {
+        const splitData = data.split("\r\n");
+        console.log({ data: splitData });
+        const results = againSplitData(splitData);
+        console.log({ results });
+        csvUpload(results);
+      }
+    });
+
+    function againSplitData(data: any) {
+      let arr = [];
+      const result = data.map((element: string) => element.split(","));
+      console.log("Split Data Again:", result);
+
+      const shiftResult = result.shift();
+      console.log(shiftResult);
+      console.log("shiftpacxi", result);
+
+      for (let i = 0; i < result.length; i++) {
+        const dataVal = result[i];
+        console.log({ dataval: result[i] });
+
+        let obj = {};
+        for (let j = 0; j < dataVal.length; j++) {
+          obj = { [shiftResult[j]]: dataVal[j], ...obj };
+          console.log({ obj: { [shiftResult[j]]: dataVal[j] } });
+        }
+
+        arr.push(obj);
+        console.log({ arr: arr });
+      }
+      console.log(arr);
+      return arr;
+    }
+
+    async function csvUpload(data: any[]) {
+      if (!data) {
+        return res
+          .status(400)
+          .send({ error: "Data not allotted in this file" });
+      }
+
+      const createdTodos = [];
+
+      for (let i = 0; i < data.length; i++) {
+        const result = data[i];
+        console.log("csv ko result", result);
+        const csvTodo = await prisma.todo.create({
+          data: {
+            title: result.title,
+            description: result.description,
+          },
+        });
+
+        console.log({ csvTodo });
+        createdTodos.push(csvTodo);
+      }
+
+      return createdTodos;
+    }
+
     if (!title || !description) {
       return res
         .status(400)
@@ -209,7 +278,7 @@ app.post("/add-todos", async (req, res) => {
       },
     });
 
-    return res.status(302).redirect("/");
+    return res.status(201).redirect("/");
   } catch (e) {
     console.log(e);
     return res.status(304).send("Forbidden to create todos");

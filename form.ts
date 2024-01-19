@@ -7,15 +7,16 @@ interface IFormProps {
 // form Html
 export const formHtml = () => {
   return `
-    <form
+  <form
     hx-indicator="#loading"
     hx-post="/add-todos"
     hx-trigger="submit"
-    hx-vals="title desc"
+    hx-vals="title desc file"
     class="bg-white shadow-2xl rounded px-8 pt-6 pb-8 w-[600px]"
     hx-swap="outerHTML"
     hx-target="#todos-container"
-  >
+   
+    >
     <div class="mb-4">
       <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
         Title
@@ -28,7 +29,12 @@ export const formHtml = () => {
         placeholder="Title"
       />
     </div>
+   
 
+
+    <input type="file" name="file"
+    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+     id="file" />
     <div class="mb-6">
       <label
         class="block text-gray-700 text-sm font-bold mb-2"
@@ -49,12 +55,12 @@ export const formHtml = () => {
       <button
         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         type="submit"
+
       >
         Submit
       </button>
     </div>
   </form>
-
   `;
 };
 

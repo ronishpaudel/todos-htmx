@@ -9,7 +9,7 @@ export const mainHtml = () => {
     >
       <div class="flex text-white pt-5 pb-3 gap-5 items-center pl-[1.5rem]">
         <input
-          class="border border-gray-600 bg-gray-800 p-2 rounded-lg w-[484px] py-2"
+          class="border border-gray-600 bg-gray-800 p-2 rounded-lg w-[365px] py-2"
           placeholder="Start Searching Your Todos...."
           name="search"
           type="search"
@@ -18,6 +18,7 @@ export const mainHtml = () => {
           hx-target="#search-results"
           hx-indicator="#loading"
         />
+       
         <div
           hx-get="/get/todo"
           hx-swap="outerHTML"
@@ -27,6 +28,13 @@ export const mainHtml = () => {
         >
           Add new todo
         </div>
+        <div
+        class="bg-green-600 py-2 px-1 rounded-lg cursor-pointer text-[14px] uppercase font-medium"
+        >
+        <a href="/download/csv" download="data.csv">
+      Export data
+      </a>
+      </div>
       </div>
       <div class="text-white flex px-[1.7rem] w-full underline">
         <div class="w-[42%] py-1 text-xs font-medium uppercase tracking-wider">

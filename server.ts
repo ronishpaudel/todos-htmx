@@ -193,8 +193,44 @@ app.post("/search/todos-data", async (req, res) => {
     return res.status(404).send("todos Not found");
   }
 });
+//GET REQ FOR FILE DOWNLOAD
 
-// POST REQ FOR TODOS
+app.get("/download/csv", async (req, res) => {
+  try {
+    const csvData = await prisma.todo.findMany({
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        createdAt: true,
+      },
+    });
+    const filePath = path.join(__dirname, "csv", "todos.csv");
+
+    const csvContent = csvData
+      .map((row) => `${row.id},${row.title},${row.description}${row.createdAt}`)
+      .join("\n");
+
+    const fileCreate = fs.writeFileSync(
+      filePath,
+      `Id,Title,Description,CreatedAt\n${csvContent}`
+    );
+
+    res.download(filePath, "todos.csv", (err) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send("Internal Server Error");
+      }
+
+      fs.unlinkSync(filePath);
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// POST REQ FOR CREATING TODOS (VIA CSV FILE OR REQ BODY)
 app.post("/add-todos", async (req, res) => {
   try {
     const { title, description, file } = req.body;
@@ -328,43 +364,6 @@ app.delete("/remove-todos/:id", async (req, res) => {
     return res.status(200).send(``);
   } catch (e) {
     return res.status(404).send("Nothing here tto delete");
-  }
-});
-
-//GET REQ FOR FILE DOWNLOAD
-
-app.get("/download/csv", async (req, res) => {
-  try {
-    const csvData = await prisma.todo.findMany({
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        createdAt: true,
-      },
-    });
-    const filePath = path.join(__dirname, "csv", "todos.csv");
-
-    const csvContent = csvData
-      .map((row) => `${row.id},${row.title},${row.description}${row.createdAt}`)
-      .join("\n");
-
-    const fileCreate = fs.writeFileSync(
-      filePath,
-      `Id,Title,Description,CreatedAt\n${csvContent}`
-    );
-
-    res.download(filePath, "todos.csv", (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Internal Server Error");
-      }
-
-      fs.unlinkSync(filePath);
-    });
-  } catch (e) {
-    console.error(e);
-    res.status(500).send("Internal Server Error");
   }
 });
 

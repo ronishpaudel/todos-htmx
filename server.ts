@@ -367,6 +367,6 @@ app.delete("/remove-todos/:id", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
+app.listen(3001, () => {
   console.log("Server running at port 3000");
 });
